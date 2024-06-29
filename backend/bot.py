@@ -1,4 +1,4 @@
-yimport os
+import os
 from langchain_pinecone import PineconeVectorStore
 from langchain_openai import ChatOpenAI
 from langchain.chains import create_retrieval_chain
