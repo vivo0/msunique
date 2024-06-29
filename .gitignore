@@ -6,3 +6,4 @@ gpt-4o
 .idea
 backend/parsed_docs
 backend/doc_contents
+backend/.env

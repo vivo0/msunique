@@ -10,7 +10,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from dotenv import load_dotenv
 
+load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 
 class Bot:
     def __init__(self, vectorstore):
@@ -101,11 +103,35 @@ Interest Coverage Ratio
             | StrOutputParser()
         )
         
-        query = "cash flows from operating activities"
+        # query = "cash flows from operating activities"
         # docs = self.vectorstore.similarity_search(query)
         # print(docs)
         # print(rag_chain.invoke(metric))
         return rag_chain.invoke(metric)
+    
+    def get_response(self, query, namespace):
+        llm = ChatOpenAI(temperature=0,model_name=self.model_name)
+        # qa = RetrievalQA.from_chain_type(
+        #     llm=llm,
+        #     chain_type="stuff",
+        #     retriever=self.vectorstore.as_retriever()
+        # )
+
+        template = "You are a chatbot, answer this question {query} using this context: {context}"
+
+        prompt = ChatPromptTemplate.from_template(template)
+
+        rag_chain = (
+            {"context": self.vectorstore.as_retriever(include_metadata=True, search_kwargs={"k": 3, 'filter': {'namespace': namespace}}), "query": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+
+        return rag_chain.invoke(query)
+
+
+
 
 if __name__ == "__main__":
     os.environ["PINECONE_API_KEY"] = os.getenv("PINECONE_API_KEY")

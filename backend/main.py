@@ -11,17 +11,6 @@ import time
 from retrying import retry
 from dotenv import load_dotenv
 
-app = FastAPI()
-
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-os.environ["PINECONE_API_KEY"] = os.getenv("PINECONE_API_KEY")
-
-embedder = OpenAIEmbeddings(model="text-embedding-ada-002")
-vectorstore = PineconeVectorStore.from_existing_index("swisshackaton", embedder)
-bot = Bot(vectorstore)
-
-
-
 METRICS = [
     "Net Revenue",
     "Net Interest Income",
@@ -69,6 +58,16 @@ METRICS = [
     "Interest Coverage Ratio"
 ]
 
+app = FastAPI()
+
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["PINECONE_API_KEY"] = os.getenv("PINECONE_API_KEY")
+
+embedder = OpenAIEmbeddings(model="text-embedding-ada-002")
+vectorstore = PineconeVectorStore.from_existing_index("swisshackaton", embedder)
+bot = Bot(vectorstore)
+
 
 # Retry configuration: retry up to 3 times, wait 1 minute between retries
 @retry(stop_max_attempt_number=3, wait_fixed=60000)
@@ -103,14 +102,24 @@ def get_metrics():
 
     return results
 
-    # for metric in METRICS:
-    #     for namespace in namespaces:
-    #         metric_prediction = bot.get_metric(metric, namespace)
-    #         results[namespace][metric] = metric_prediction
+@app.post("/chatbot")
+def post_query(query_data: dict):
+    query = query_data.get("query")
+    namespace = query_data.get("company")
+
+    # query = "dimmi la ROCE di ABB nel 2023"
+    # namespace = "ABB2023"
+    response = bot.get_response(query, namespace)
+    print(response)
+    
+    return {"response": response}
+    
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # import uvicorn
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    post_query({"query": "Tell me the TOTAL expanses", "company": "ABB2023"})
     
 
     # results = get_metrics()

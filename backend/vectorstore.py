@@ -9,6 +9,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from dotenv import load_dotenv
 
+load_dotenv()
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 os.environ["OPENAI_API_KEY"] = PINECONE_API_KEY
 pinecone = Pinecone(api_key=PINECONE_API_KEY)
