@@ -1,2 +1,6 @@
 .DS_Store
 config.json
+.env
+Data
+gpt-4o
+.idea
