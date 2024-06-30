@@ -62,7 +62,7 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
             style={{
               gridColumn: "1 / 2",
               gridRow: "2 / 3",
-              height: "18.6em",
+              height: "100%",
             }}
           >
             <GraphPlaceholder>
