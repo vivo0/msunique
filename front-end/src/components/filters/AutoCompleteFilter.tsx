@@ -44,7 +44,6 @@ const AutocompleteFilter: React.FC<AutocompleteFilterProps> = ({
       options={options}
       value={value}
       onChange={(_event, newValue) => {
-        console.log(placeholder);
         const maxSelections =
           placeholder === "COMPANY"
             ? 2

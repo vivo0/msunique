@@ -26,6 +26,12 @@ import {
   stockPerformanceMetrics,
 } from "../constants/metrics";
 
+interface CompanyInfo {
+  name: string;
+  description: string;
+  score: number;
+}
+
 const Dashboard: React.FC = () => {
   const concatenatedArray = useFilterStore((state) => state.concatenatedArray);
   const sector = useFilterStore((state) => state.sector);
@@ -46,7 +52,9 @@ const Dashboard: React.FC = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
-  const [allFiltersSelected, setAllFiltersSelected] = useState(false);
+  const [allFiltersSelected, setAllFiltersSelected] = useState<boolean>(false);
+  const [companiesInfo, setCompaniesInfo] = useState<CompanyInfo[]>([]);
+
   const filterState = { sector, geographicArea, company, year };
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -55,12 +63,26 @@ const Dashboard: React.FC = () => {
   ) => {
     if (!metrics || concatenatedArray.length === 0) return [];
 
+    const companyDescriptions: { [key: string]: string } = {};
+
+    concatenatedArray.forEach((key) => {
+      const companyName = key.replace(/\d+$/, "");
+      if (
+        metrics[key] &&
+        metrics[key].description &&
+        !companyDescriptions[companyName]
+      ) {
+        companyDescriptions[companyName] = metrics[key].description;
+      }
+    });
+
     return metricsArray.map((metric) => ({
       ...metric,
       values: concatenatedArray.map((key) => ({
         key,
         value: metrics[key]?.[metric.title] || "-",
       })),
+      description: companyDescriptions[company[0].replace(/\d+$/, "")] || "",
     }));
   };
 
@@ -92,19 +114,57 @@ const Dashboard: React.FC = () => {
     setAllFiltersSelected(areAllFiltersSelected);
   }, [sector, geographicArea, company, year]);
 
+  useEffect(() => {
+    if (metrics && company.length > 0) {
+      const newCompaniesInfo = company
+        .slice(0, 2)
+        .map((companyName) => {
+          const companyKey = Object.keys(metrics).find((key) =>
+            key.startsWith(companyName)
+          );
+          if (companyKey) {
+            return {
+              name: companyName,
+              description: metrics[companyKey].description || "",
+              score: calculateScore(metrics[companyKey]),
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as CompanyInfo[];
+
+      setCompaniesInfo(newCompaniesInfo);
+    }
+  }, [metrics, company]);
+
+  const calculateScore = (companyMetrics: any): number => {
+    return Math.floor(Math.random() * 10);
+  };
+
   return (
     <MainContainer>
       <LeftSection isOpen={sidebarOpen}>
         <SidebarContainer>
           <SidebarMenu onToggle={setSidebarOpen} />
           <ContentContainer isOpen={sidebarOpen}>
-            <ContentHeader>
-              <h2>{company.join(", ")}</h2>
-              <ScoreSection score={10}>10</ScoreSection>
-            </ContentHeader>
-            <p style={{ marginLeft: "20px" }}>
-              UBS Group AG is a leading global financial services company.
-            </p>
+            {companiesInfo.map((companyInfo, index) => (
+              <div key={companyInfo.name}>
+                <ContentHeader>
+                  <h2>{companyInfo.name}</h2>
+                  <ScoreSection score={companyInfo.score}>
+                    {companyInfo.score}
+                  </ScoreSection>
+                </ContentHeader>
+                <p
+                  style={{
+                    marginLeft: "20px",
+                    marginBottom: index === 0 ? "20px" : "0",
+                  }}
+                >
+                  {companyInfo.description}
+                </p>
+              </div>
+            ))}
           </ContentContainer>
         </SidebarContainer>
       </LeftSection>
@@ -140,6 +200,9 @@ const Dashboard: React.FC = () => {
               }
               onExpand={() => handleQuadrantSelect("Regulatory & Management")}
               allFiltersSelected={allFiltersSelected}
+              selectedCompanies={concatenatedArray.map((key) =>
+                key.replace(/\d+$/, "")
+              )}
             />
             <KeyRatios
               data={getMetricValues(keyRatiosMetrics)}
