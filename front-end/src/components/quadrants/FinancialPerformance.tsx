@@ -1,16 +1,26 @@
 import React from "react";
-import { Quadrant, FinancialCard, QuadrantButton } from "./QuadrantsStyles";
-import { financialPerformanceMetrics } from "../../constants/metrics";
+import {
+  Quadrant,
+  FinancialCard,
+  QuadrantButton,
+  LoadingContainer,
+} from "./QuadrantsStyles";
 import BalanceIcon from "@mui/icons-material/Balance";
+import { Metric } from "../../types";
+import { CircularProgress } from "@mui/material";
 
 interface FinancialPerformanceProps {
+  data: (Metric & { values: Array<{ key: string; value: string }> })[];
   expanded: boolean;
   onExpand: () => void;
+  allFiltersSelected: boolean;
 }
 
 const FinancialPerformance: React.FC<FinancialPerformanceProps> = ({
+  data,
   expanded,
   onExpand,
+  allFiltersSelected,
 }) => {
   return (
     <Quadrant expanded={expanded}>
@@ -28,15 +38,28 @@ const FinancialPerformance: React.FC<FinancialPerformanceProps> = ({
         <BalanceIcon />
         Financial Performance
       </h2>
-      {financialPerformanceMetrics
-        .filter((metric) => expanded || metric.expanded)
-        .map((item) => (
-          <FinancialCard expanded={expanded} key={item.title}>
-            <h4 style={{ color: "white", marginBottom: "5px" }}>
-              {item.title}
-            </h4>
-          </FinancialCard>
-        ))}
+      {allFiltersSelected ? (
+        data
+          .filter((metric) => expanded || metric.expanded)
+          .map((item) => (
+            <FinancialCard expanded={expanded} key={item.title}>
+              <h4 style={{ color: "white", marginBottom: "5px" }}>
+                {item.title}
+              </h4>
+              {item.values.map(({ key, value }) => (
+                <p key={key} style={{ color: "#5882be" }}>
+                  {value.toString().toLowerCase().includes("failed")
+                    ? "-"
+                    : value}
+                </p>
+              ))}
+            </FinancialCard>
+          ))
+      ) : (
+        <LoadingContainer>
+          <CircularProgress />
+        </LoadingContainer>
+      )}
       <div
         style={{
           gridColumn: "1 / -1",
@@ -46,7 +69,7 @@ const FinancialPerformance: React.FC<FinancialPerformanceProps> = ({
           marginTop: "auto",
         }}
       >
-        {!expanded && (
+        {!expanded && allFiltersSelected && (
           <QuadrantButton onClick={onExpand}>Show more metrics</QuadrantButton>
         )}
       </div>

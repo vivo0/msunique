@@ -1,14 +1,27 @@
 import React from "react";
-import { Quadrant, FinancialCard, QuadrantButton } from "./QuadrantsStyles";
-import { keyRatios } from "../../constants/metrics";
+import {
+  Quadrant,
+  FinancialCard,
+  QuadrantButton,
+  LoadingContainer,
+} from "./QuadrantsStyles";
 import PercentIcon from "@mui/icons-material/Percent";
+import { Metric } from "../../types";
+import { CircularProgress } from "@mui/material";
 
 interface KeyRatiosProps {
   expanded: boolean;
   onExpand: () => void;
+  data: (Metric & { values: Array<{ key: string; value: string }> })[];
+  allFiltersSelected: boolean;
 }
 
-const KeyRatios: React.FC<KeyRatiosProps> = ({ expanded, onExpand }) => {
+const KeyRatios: React.FC<KeyRatiosProps> = ({
+  expanded,
+  onExpand,
+  data,
+  allFiltersSelected,
+}) => {
   return (
     <Quadrant expanded={expanded}>
       <h2
@@ -25,15 +38,28 @@ const KeyRatios: React.FC<KeyRatiosProps> = ({ expanded, onExpand }) => {
         <PercentIcon />
         Key Ratios
       </h2>
-      {keyRatios
-        .filter((metric) => expanded || metric.expanded)
-        .map((item) => (
-          <FinancialCard expanded={expanded} key={item.title}>
-            <h4 style={{ color: "white", marginBottom: "5px" }}>
-              {item.title}
-            </h4>
-          </FinancialCard>
-        ))}
+      {allFiltersSelected ? (
+        data
+          .filter((metric) => expanded || metric.expanded)
+          .map((item) => (
+            <FinancialCard expanded={expanded} key={item.title}>
+              <h4 style={{ color: "white", marginBottom: "5px" }}>
+                {item.title}
+              </h4>
+              {item.values.map(({ key, value }) => (
+                <p key={key} style={{ color: "#5882be" }}>
+                  {value.toString().toLowerCase().includes("failed")
+                    ? "-"
+                    : value}
+                </p>
+              ))}
+            </FinancialCard>
+          ))
+      ) : (
+        <LoadingContainer>
+          <CircularProgress />
+        </LoadingContainer>
+      )}
       <div
         style={{
           gridColumn: "1 / -1",
@@ -43,7 +69,7 @@ const KeyRatios: React.FC<KeyRatiosProps> = ({ expanded, onExpand }) => {
           marginTop: "auto",
         }}
       >
-        {!expanded && (
+        {!expanded && allFiltersSelected && (
           <QuadrantButton onClick={onExpand}>Show more metrics</QuadrantButton>
         )}
       </div>

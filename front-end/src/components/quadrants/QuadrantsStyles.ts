@@ -10,11 +10,24 @@ export const QuadrantSection = styled("div")({
   overflow: "hidden",
 });
 
+export const LoadingContainer = styled("div")`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 export const Quadrant = styled("div")<{ expanded?: boolean }>(
   ({ expanded }) => ({
     backgroundColor: "#2a2a2a",
     borderRadius: "8px",
     padding: "20px",
+    minHeight: "300px",
+    position: "relative",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gridTemplateRows: "auto 1fr 1fr auto",
@@ -39,6 +52,8 @@ export const QuadrantStock = styled("div")<{ expanded?: boolean }>(
     padding: "20px",
     display: "grid",
     gridTemplateColumns: "11fr 6fr",
+    position: "relative",
+    minHeight: "300px",
     gridTemplateRows: expanded ? "auto 1fr 1fr auto" : "auto 1fr auto",
     gap: "10px",
     ...(expanded && {

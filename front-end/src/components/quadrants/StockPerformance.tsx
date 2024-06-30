@@ -4,8 +4,8 @@ import {
   FinancialCard,
   GraphPlaceholder,
   QuadrantButton,
+  LoadingContainer,
 } from "./QuadrantsStyles";
-import { stockPerformanceMetrics } from "../../constants/metrics";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import {
   AreaChart,
@@ -17,21 +17,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import {} from "recharts";
-
-interface StockPerformanceProps {
-  expanded: boolean;
-  onExpand: () => void;
-}
-
-const data = [
-  { name: "Page A", uv: 4000, pv: 2400, amt: 2400 },
-  { name: "Page B", uv: 3000, pv: 1398, amt: 2210 },
-  { name: "Page C", uv: 2000, pv: 9800, amt: 2290 },
-  { name: "Page D", uv: 2780, pv: 3908, amt: 2000 },
-  { name: "Page E", uv: 1890, pv: 4800, amt: 2181 },
-  { name: "Page F", uv: 2390, pv: 3800, amt: 2500 },
-  { name: "Page G", uv: 3490, pv: 4300, amt: 2100 },
-];
+import { Metric } from "../../types";
+import { CircularProgress } from "@mui/material";
 
 const CustomXAxis = ({ allowDataOverflow = false, ...props }) => (
   <XAxis allowDataOverflow={allowDataOverflow} {...props} />
@@ -40,10 +27,18 @@ const CustomXAxis = ({ allowDataOverflow = false, ...props }) => (
 const CustomYAxis = ({ allowDataOverflow = false, ...props }) => (
   <YAxis allowDataOverflow={allowDataOverflow} {...props} />
 );
+interface StockPerformanceProps {
+  expanded: boolean;
+  onExpand: () => void;
+  data: (Metric & { values: Array<{ key: string; value: string }> })[];
+  allFiltersSelected: boolean;
+}
 
 const StockPerformance: React.FC<StockPerformanceProps> = ({
   expanded,
   onExpand,
+  data,
+  allFiltersSelected,
 }) => {
   return (
     <QuadrantStock expanded={expanded}>
@@ -61,7 +56,7 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
         <ShowChartIcon />
         Stock Performance
       </h2>
-      {!expanded ? (
+      {!expanded && allFiltersSelected ? (
         <>
           <div
             style={{
@@ -98,43 +93,57 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
               height: "100%",
             }}
           >
-            {stockPerformanceMetrics
+            {data
               .filter((metric) => metric.expanded)
               .map((item) => (
                 <FinancialCard expanded={expanded} key={item.title}>
                   <h4 style={{ color: "white", marginBottom: "5px" }}>
                     {item.title}
                   </h4>
-                  <p
-                    style={{
-                      color: "#5882be",
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.value}
-                  </p>
+                  {item.values.map(({ key, value }) => (
+                    <p
+                      key={key}
+                      style={{
+                        color: "#5882be",
+                        fontSize: "18px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {value.toString().toLowerCase().includes("failed")
+                        ? "-"
+                        : value}
+                    </p>
+                  ))}
                 </FinancialCard>
               ))}
           </div>
         </>
-      ) : (
-        stockPerformanceMetrics.map((item) => (
+      ) : allFiltersSelected ? (
+        data.map((item) => (
           <FinancialCard key={item.title} expanded={expanded}>
             <h4 style={{ color: "white", marginBottom: "5px" }}>
               {item.title}
             </h4>
-            <p
-              style={{
-                color: "#5882be",
-                fontSize: "18px",
-                fontWeight: "bold",
-              }}
-            >
-              {item.value}
-            </p>
+            {item.values.map(({ key, value }) => (
+              <p
+                key={key}
+                style={{
+                  color: "#5882be",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                }}
+              >
+                {value.toString().toLowerCase().includes("failed")
+                  ? "-"
+                  : value}
+              </p>
+            ))}
           </FinancialCard>
         ))
+      ) : (
+        <LoadingContainer>
+          <CircularProgress />
+        </LoadingContainer>
       )}
       <div
         style={{
@@ -145,7 +154,7 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
           marginTop: "auto",
         }}
       >
-        {!expanded && (
+        {!expanded && allFiltersSelected && (
           <QuadrantButton onClick={onExpand}>Show more metrics</QuadrantButton>
         )}
       </div>

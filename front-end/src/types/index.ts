@@ -5,8 +5,14 @@ export interface Metric {
   customSize?: string;
 }
 
+interface MetricWithValues extends Metric {
+  values: Array<{ key: string; value: string }>;
+}
+
 export interface QuadrantProps {
-  expanded?: boolean;
+  data: MetricWithValues[];
+  expanded: boolean;
+  onExpand: () => void;
 }
 
 export interface FilterState {

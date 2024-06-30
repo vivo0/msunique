@@ -44,7 +44,17 @@ const AutocompleteFilter: React.FC<AutocompleteFilterProps> = ({
       options={options}
       value={value}
       onChange={(_event, newValue) => {
-        if (Array.isArray(newValue) && newValue.length <= 2) {
+        console.log(placeholder);
+        const maxSelections =
+          placeholder === "COMPANY"
+            ? 2
+            : placeholder === "YEAR"
+            ? 1
+            : undefined;
+        if (
+          Array.isArray(newValue) &&
+          (maxSelections === undefined || newValue.length <= maxSelections)
+        ) {
           onChange(newValue as string[]);
         }
       }}
@@ -68,6 +78,9 @@ const AutocompleteFilter: React.FC<AutocompleteFilterProps> = ({
       )}
       //@ts-expect-error - renderOption is not a valid prop
       renderOption={renderOption}
+      limitTags={
+        placeholder === "Company" ? 2 : placeholder === "Year" ? 1 : undefined
+      }
     />
   );
 };

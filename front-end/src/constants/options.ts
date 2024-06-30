@@ -13,41 +13,18 @@ export const geographicAreaOptions = [
   "Asia",
   "Africa",
   "Australia",
-  "Antarctica",
 ];
 
 export const companyOptions = [
-  "UBS",
-  "Microsoft",
-  "Apple",
-  "Google",
-  "Amazon",
-  "Facebook",
-  "Tesla",
   "IBM",
-  "Goldman Sachs",
-  "JPMorgan Chase",
-  "Intel",
-  "Samsung",
-  "Oracle",
-  "Citi",
-  "Bank of America",
-  "Wells Fargo",
-  "HSBC",
-  "Sony",
+  "ABB",
+  "PostFinance",
+  "Raiffeisen",
   "Siemens",
-  "Alibaba",
+  "UBS",
 ];
 
-export const yearOptions = [
-  "2018",
-  "2019",
-  "2020",
-  "2021",
-  "2022",
-  "2023",
-  "2024",
-];
+export const yearOptions = ["2021", "2022", "2023"];
 
 export const quadrants = [
   "Financial Performance",
