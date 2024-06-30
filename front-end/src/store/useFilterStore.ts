@@ -12,7 +12,7 @@ export const useFilterStore = create<FilterStore>((set) => ({
   geographicArea: ["Europe"],
   company: ["UBS"],
   year: ["2023"],
-  concatenatedArray: ["UBS2023"], // Initialize with a concatenated value
+  concatenatedArray: ["UBS2023"],
 
   updateFilter: (key, value) => {
     set((state) => {
