@@ -6,8 +6,7 @@ import logo from "../../assets/logo.png";
 import ChatArea from "./ChatArea.tsx";
 import ChatInput from "./ChatInput.tsx";
 import TypingAnimation from "./TypingAnimation";
-import axios from "axios";
-import { useFilterStore } from "../../store/useFilterStore.ts";
+import { useBackgroundProcess } from "../../hooks/useBackgroundProcess.ts";
 
 interface ChatBotDialogProps {
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -18,58 +17,40 @@ interface ChatBotDialogProps {
 interface Message {
   text: string;
   sender: string;
+  id?: string;
 }
 
 const ChatBotDialog = ({ setOpen, className, color }: ChatBotDialogProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() =>
+    JSON.parse(localStorage.getItem("chatBotMessages") || "[]")
+  );
   const [isTyping, setIsTyping] = useState(false);
-
-  const concatenatedArray = useFilterStore((state) => state.concatenatedArray);
+  const { addPendingRequest, pendingRequestsCount } = useBackgroundProcess();
 
   useEffect(() => {
-    setIsTyping(true);
-    const timer = setTimeout(() => {
-      setIsTyping(false);
-      setMessages([
-        {
-          text: "Hi! I'm FAInalyst - Chatbot. How can I help you today?",
-          sender: "bot",
-        },
-      ]);
-    }, 1000);
-    return () => clearTimeout(timer);
+    if (messages.length === 0) {
+      const initialMessage = {
+        text: "Hi! I'm FAInalyst - Chatbot. How can I help you today?",
+        sender: "bot",
+      };
+      setMessages([initialMessage]);
+      localStorage.setItem("chatBotMessages", JSON.stringify([initialMessage]));
+    }
   }, []);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+  useEffect(() => {
+    setIsTyping(pendingRequestsCount > 0);
+  }, [pendingRequestsCount]);
 
   const handleSend = async (message: string) => {
-    setMessages([...messages, { text: message, sender: "user" }]);
-    setIsTyping(true);
+    const userMessage = { text: message, sender: "user" };
+    setMessages((prevMessages) => {
+      const newMessages = [...prevMessages, userMessage];
+      localStorage.setItem("chatBotMessages", JSON.stringify(newMessages));
+      return newMessages;
+    });
 
-    try {
-      const response = await axios.post(`${API_URL}/chatbot`, {
-        query: message,
-        company: concatenatedArray,
-      });
-
-      setIsTyping(false);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: response.data.response, sender: "bot" },
-      ]);
-    } catch (error) {
-      console.error("Error fetching response from chatbot:", error);
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            text: "Sorry, I encountered an error. Please try again later.",
-            sender: "bot",
-          },
-        ]);
-      }, 2000);
-    }
+    addPendingRequest(message);
   };
 
   return (

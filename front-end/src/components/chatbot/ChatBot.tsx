@@ -2,16 +2,21 @@ import chatBotImage from "../../assets/chatBotImage.png";
 import { Button } from "@mui/material";
 import ChatBotDialog from "./ChatBotDialog";
 import { useEffect, useState } from "react";
+import { getFromLocalStorage, saveToLocalStorage } from "../../utils/helpers";
 
 interface ChatBotProps {
   color: string;
 }
 
 const ChatBot = ({ color }: ChatBotProps) => {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(() =>
+    getFromLocalStorage("chatBotOpen", false)
+  );
   const [animate, setAnimate] = useState<boolean>(false);
   const [closing, setClosing] = useState<boolean>(false);
-  const [showInitialMessages, setShowInitialMessages] = useState<boolean>(true);
+  const [showInitialMessages, setShowInitialMessages] = useState<boolean>(() =>
+    getFromLocalStorage("showInitialMessages", true)
+  );
   const [initialMessageClosing, setInitialMessageClosing] =
     useState<boolean>(false);
 
@@ -19,6 +24,8 @@ const ChatBot = ({ color }: ChatBotProps) => {
     setShowInitialMessages(false);
     setAnimate(true);
     setOpen(true);
+    saveToLocalStorage("chatBotOpen", true);
+    saveToLocalStorage("showInitialMessages", false);
   };
 
   const handleClose = () => {
@@ -27,19 +34,22 @@ const ChatBot = ({ color }: ChatBotProps) => {
       setOpen(false);
       setAnimate(false);
       setClosing(false);
+      saveToLocalStorage("chatBotOpen", false);
     }, 200);
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setInitialMessageClosing(true);
-      setTimeout(() => {
-        setShowInitialMessages(false);
-      }, 1000);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []);
+    if (showInitialMessages) {
+      const timer = setTimeout(() => {
+        setInitialMessageClosing(true);
+        setTimeout(() => {
+          setShowInitialMessages(false);
+          saveToLocalStorage("showInitialMessages", false);
+        }, 1000);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showInitialMessages]);
 
   return (
     <div className="chatBot-container">
