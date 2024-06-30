@@ -8,10 +8,6 @@ import {
 import BalanceIcon from "@mui/icons-material/Balance";
 import { Metric } from "../../types";
 import { CircularProgress } from "@mui/material";
-import {
-  parseNumberString,
-  generateRealisticPlaceholder,
-} from "../../utils/helpers";
 
 interface FinancialPerformanceProps {
   data: (Metric & {
@@ -29,25 +25,6 @@ const FinancialPerformance: React.FC<FinancialPerformanceProps> = ({
   onExpand,
   allFiltersSelected,
 }) => {
-  const formatValue = (value: string, title: string) => {
-    const val = value.replace("$", "");
-    if (val.toLowerCase().includes("failed") || val === "-") {
-      const estimatedValue = generateRealisticPlaceholder(title);
-      return `$${estimatedValue.toLocaleString()}`;
-    }
-    if (val.includes("%") || val.includes("$")) {
-      return value;
-    }
-    if (
-      val.toLowerCase().includes("million") ||
-      val.toLowerCase().includes("billion") ||
-      val.toLowerCase().includes("thousand")
-    ) {
-      return `$${parseNumberString(val).toLocaleString()}`;
-    }
-    return isNaN(Number(val.replace(",", ""))) ? val : `$${val}`;
-  };
-
   const formatKey = (key: string) => {
     return key.replace(/[0-9]/g, "");
   };
@@ -93,8 +70,7 @@ const FinancialPerformance: React.FC<FinancialPerformanceProps> = ({
                     alignItems: "center",
                   }}
                 >
-                  <h5 style={{ color: "white" }}>{formatKey(key)}</h5>:{" "}
-                  {formatValue(value, item.title)}
+                  <h5 style={{ color: "white" }}>{formatKey(key)}</h5>: {value}
                 </p>
               ))}
             </FinancialCard>

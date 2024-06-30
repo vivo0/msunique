@@ -18,54 +18,6 @@ interface RegulatoryManagementProps {
   selectedCompanies: string[];
 }
 
-const generateRealisticPlaceholder = (metricTitle: string) => {
-  const placeholders = {
-    "Regulatory Compliance Score": `${Math.floor(Math.random() * 100)}%`,
-    "Governance Rating": ["A+", "A", "B+", "B", "C+", "C"][
-      Math.floor(Math.random() * 6)
-    ],
-    "Board Independence": `${Math.floor(Math.random() * 40 + 60)}%`,
-    "Environmental Impact Score": `${Math.floor(Math.random() * 100)} / 100`,
-    "Social Responsibility Rating": ["Excellent", "Good", "Fair", "Poor"][
-      Math.floor(Math.random() * 4)
-    ],
-    "Common Equity Tier 1 (CET1) Ratio": `${(Math.random() * 20 + 5).toFixed(
-      2
-    )}%`,
-    "Tier 1 Capital Ratio": `${(Math.random() * 25 + 10).toFixed(2)}%`,
-    "Risk-Weighted Assets (RWA)": `$${(Math.random() * 500 + 100).toFixed(
-      2
-    )} billion`,
-    "Liquidity Coverage Ratio (LCR)": `${(Math.random() * 150 + 50).toFixed(
-      2
-    )}%`,
-  };
-
-  if (metricTitle in placeholders) {
-    return placeholders[metricTitle];
-  } else if (metricTitle.toLowerCase().includes("ratio")) {
-    return `${(Math.random() * 100).toFixed(2)}%`;
-  } else if (metricTitle.toLowerCase().includes("score")) {
-    return `${Math.floor(Math.random() * 100)} / 100`;
-  } else {
-    return `${Math.floor(Math.random() * 1000)} units`;
-  }
-};
-
-const formatValue = (value: string, title: string) => {
-  if (value.toLowerCase().includes("failed") || value === "-") {
-    return generateRealisticPlaceholder(title);
-  }
-
-  if (title.includes("Ratio") || title.includes("LCR")) {
-    return `${value}%`;
-  } else if (title === "Risk-Weighted Assets (RWA)") {
-    return `$${value} billion`;
-  }
-
-  return value;
-};
-
 const formatKey = (key: string) => {
   return key.replace(/[0-9]/g, "");
 };
@@ -117,8 +69,7 @@ const RegulatoryManagement: React.FC<RegulatoryManagementProps> = ({
                     alignItems: "center",
                   }}
                 >
-                  <h5 style={{ color: "white" }}>{formatKey(key)}</h5>:{" "}
-                  {formatValue(value, item.title)}
+                  <h5 style={{ color: "white" }}>{formatKey(key)}</h5>: {value}
                 </p>
               ))}
             </FinancialCard>

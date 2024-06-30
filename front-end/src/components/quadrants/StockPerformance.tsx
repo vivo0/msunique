@@ -25,39 +25,6 @@ interface StockPerformanceProps {
   data: (Metric & { values: Array<{ key: string; value: string }> })[];
   allFiltersSelected: boolean;
 }
-const isPercentageMetric = (
-  values: Array<{ key: string; value: string }>,
-  title: string
-) => {
-  const hasPercentage = values.some(({ value }) => value.includes("%"));
-  const hasDollar = values.some(({ value }) => value.includes("$"));
-
-  if (hasPercentage) return true;
-  if (hasDollar) return false;
-
-  return (
-    title.toLowerCase().includes("ratio") ||
-    title.toLowerCase().includes("percentage")
-  );
-};
-
-const formatValue = (value: string, title: string, isPercentage: boolean) => {
-  if (value.toLowerCase().includes("failed") || value === "-") {
-    return isPercentage
-      ? `${(Math.random() * 20).toFixed(2)}%`
-      : `$${(Math.random() * 100 + 10).toFixed(2)}`;
-  }
-
-  if (isPercentage && !value.includes("%")) {
-    return `${parseFloat(value).toFixed(2)}%`;
-  }
-
-  if (!isPercentage && !value.includes("$") && !isNaN(parseFloat(value))) {
-    return `$${parseFloat(value).toFixed(2)}`;
-  }
-
-  return value;
-};
 
 const formatKey = (key: string) => {
   return key.replace(/[0-9]/g, "");
@@ -139,10 +106,6 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
             {data
               .filter((metric) => metric.expanded)
               .map((item) => {
-                const isPercentage = isPercentageMetric(
-                  item.values,
-                  item.title
-                );
                 return (
                   <FinancialCard expanded={expanded} key={item.title}>
                     <h3
@@ -166,7 +129,7 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
                         }}
                       >
                         <h5 style={{ color: "white" }}>{formatKey(key)}</h5>:{" "}
-                        {formatValue(value, item.title, isPercentage)}
+                        {value}
                       </p>
                     ))}
                   </FinancialCard>
@@ -176,7 +139,6 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
         </>
       ) : allFiltersSelected ? (
         data.map((item) => {
-          const isPercentage = isPercentageMetric(item.values, item.title);
           return (
             <FinancialCard key={item.title} expanded={expanded}>
               <h3
@@ -199,8 +161,7 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
                     alignItems: "center",
                   }}
                 >
-                  <h5 style={{ color: "white" }}>{formatKey(key)}</h5>:{" "}
-                  {formatValue(value, item.title, isPercentage)}
+                  <h5 style={{ color: "white" }}>{formatKey(key)}</h5>: {value}
                 </p>
               ))}
             </FinancialCard>
