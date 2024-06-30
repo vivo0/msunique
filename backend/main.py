@@ -80,44 +80,44 @@ embedder = OpenAIEmbeddings(model="text-embedding-ada-002")
 vectorstore = PineconeVectorStore.from_existing_index("swisshackaton", embedder)
 bot = Bot(vectorstore)
 
-# # def calculate_metrics():
-#     print("Calculating metrics...")
-#     with open("namespaces.txt", "r") as file:
-#         namespaces = file.read().split("\n")
+def calculate_metrics():
+    print("Calculating metrics...")
+    with open("namespaces.txt", "r") as file:
+        namespaces = file.read().split("\n")
 
-#     results = {namespace: {} for namespace in namespaces}
+    results = {namespace: {} for namespace in namespaces}
 
-#     with ThreadPoolExecutor() as executor:
-#         future_to_namespace_metric = {
-#             executor.submit(fetch_metric, metric, namespace): (namespace, metric) 
-#             for namespace in namespaces for metric in METRICS
-#         }
-#         future_to_namespace_description = {
-#             executor.submit(fetch_description, namespace): namespace 
-#             for namespace in namespaces
-#         }
+    with ThreadPoolExecutor() as executor:
+        future_to_namespace_metric = {
+            executor.submit(fetch_metric, metric, namespace): (namespace, metric) 
+            for namespace in namespaces for metric in METRICS
+        }
+        future_to_namespace_description = {
+            executor.submit(fetch_description, namespace): namespace 
+            for namespace in namespaces
+        }
         
-#         for future in as_completed({**future_to_namespace_metric, **future_to_namespace_description}):
-#             if future in future_to_namespace_metric:
-#                 namespace, metric = future_to_namespace_metric[future]
-#                 try:
-#                     result = future.result()
-#                     results[namespace].update(result)
-#                 except Exception as exc:
-#                     results[namespace][metric] = f"Failed after retries: {exc}"
-#             else:
-#                 namespace = future_to_namespace_description[future]
-#                 try:
-#                     result = future.result()
-#                     results[namespace].update(result)
-#                 except Exception as exc:
-#                     results[namespace]["description"] = f"Failed after retries: {exc}"
+        for future in as_completed({**future_to_namespace_metric, **future_to_namespace_description}):
+            if future in future_to_namespace_metric:
+                namespace, metric = future_to_namespace_metric[future]
+                try:
+                    result = future.result()
+                    results[namespace].update(result)
+                except Exception as exc:
+                    results[namespace][metric] = f"Failed after retries: {exc}"
+            else:
+                namespace = future_to_namespace_description[future]
+                try:
+                    result = future.result()
+                    results[namespace].update(result)
+                except Exception as exc:
+                    results[namespace]["description"] = f"Failed after retries: {exc}"
 
-#     # dump in a json file
-#     with open("metrics.json", mode='w') as file:
-#         json.dump(results, file, indent=4)
+    # dump in a json file
+    with open("metrics.json", mode='w') as file:
+        json.dump(results, file, indent=4)
 
-#     return results
+    return results
 
 # Retry configuration: retry up to 3 times, wait 1 minute between retries
 @retry(stop_max_attempt_number=5, wait_fixed=15000)
@@ -146,8 +146,7 @@ def get_metrics():
         with open("metrics.json", mode='r') as file:
             return json.load(file)
     else:
-        print('test')
-        # return calculate_metrics()
+        return calculate_metrics()
 
 @app.post("/chatbot")
 def post_query(query_data: dict):
@@ -175,12 +174,12 @@ def post_query(query_data: dict):
     
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # import uvicorn
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
 
     # post_query({"query": "tell me the ROCE", "company": ["IBM2023"]})
     
-    # get_metrics()
+    get_metrics()
 
 
     # results = get_metrics()
