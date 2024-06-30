@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import Markdown from "react-markdown";
 
 interface ChatAreaProps {
   messages: { text: string; sender: string }[];
@@ -56,7 +57,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages }) => {
                 color: "white",
               }}
             >
-              {message.text}
+              <Markdown>{message.text}</Markdown>
             </span>
           </div>
         ))}
