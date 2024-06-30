@@ -43,7 +43,10 @@ You can set these in a `.env` file in backend and frontend directories.
 We have parsed the data from the document JSON to create a new JSON with the keys "section" extracted from the document index and the corresponding section content. This structured approach allows us to store the data more efficiently in the vector database, thereby enhancing the chatbot's performance.
 
 ### Find the metrics
-Abbiamo scelto una serie di metriche, un LLM si occupa di cercare queste metriche nei documenti di ogni compagnia 
+We have selected a set of metrics. An LLM (Language Model) is responsible for extracting these metrics from the documents of each company and saving them in a JSON file.
+
+### Bot
+In addition to the LLM for extracting metrics, there are two other agents: one specialized in individual companies and another specialized in comparing two companies.
 
 ### Limitations and Future Work
 
