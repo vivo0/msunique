@@ -82,11 +82,21 @@ bot = Bot(vectorstore)
 
 
 # Retry configuration: retry up to 3 times, wait 1 minute between retries
-@retry(stop_max_attempt_number=3, wait_fixed=60000)
+@retry(stop_max_attempt_number=5, wait_fixed=15000)
 def fetch_metric(metric, namespace):
     try:
         metric_prediction = bot.get_metric(metric, namespace)
+
         return {metric: metric_prediction}
+    except Exception as exc:
+        print(f"Exception occurred: {exc}. Retrying...")
+        raise
+
+@retry(stop_max_attempt_number=5, wait_fixed=15000)
+def fetch_description(namespace):
+    try:
+        response = bot.get_response("write a description of the company. Don't introduce the description but just write it", namespace)
+        return {"description": response}
     except Exception as exc:
         print(f"Exception occurred: {exc}. Retrying...")
         raise
@@ -103,14 +113,30 @@ def get_metrics():
             executor.submit(fetch_metric, metric, namespace): (namespace, metric) 
             for namespace in namespaces for metric in METRICS
         }
+        future_to_namespace_description = {
+            executor.submit(fetch_description, namespace): namespace 
+            for namespace in namespaces
+        }
         
-        for future in as_completed(future_to_namespace_metric):
-            namespace, metric = future_to_namespace_metric[future]
-            try:
-                result = future.result()
-                results[namespace].update(result)
-            except Exception as exc:
-                results[namespace][metric] = f"Failed after retries: {exc}"
+        for future in as_completed({**future_to_namespace_metric, **future_to_namespace_description}):
+            if future in future_to_namespace_metric:
+                namespace, metric = future_to_namespace_metric[future]
+                try:
+                    result = future.result()
+                    results[namespace].update(result)
+                except Exception as exc:
+                    results[namespace][metric] = f"Failed after retries: {exc}"
+            else:
+                namespace = future_to_namespace_description[future]
+                try:
+                    result = future.result()
+                    results[namespace].update(result)
+                except Exception as exc:
+                    results[namespace]["description"] = f"Failed after retries: {exc}"
+
+    # dump in a json file
+    with open("results.json", mode='w') as file:
+        json.dump(results, file, indent=4)
 
     return results
 
@@ -119,8 +145,16 @@ def post_query(query_data: dict):
     query = query_data.get("query")
     namespaces = query_data.get("company")
     responses = []
-    for namespace in namespaces:
-        responses.append(bot.get_response(query, namespace, compare=None))
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(bot.get_response, query, namespace, None): namespace for namespace in namespaces}
+        
+        for future in as_completed(futures):
+            namespace = futures[future]
+            try:
+                response = future.result()
+                responses.append(response)
+            except Exception as exc:
+                responses.append(f"Failed to get response for {namespace}: {exc}")
     
     if len(namespaces) == 1:
         print(f"Response: {responses[0]}")
@@ -135,8 +169,10 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
-    # post_query({"query": "I want to invest in one of these two companies, tell me exactly which are the comparable metrics based on the sector and which are the best indicators to analyze different sectors companies", "company": ["IBM2023", "UBS2023"]})
+    # post_query({"query": "tell me the ROCE", "company": ["IBM2023"]})
     
+    # get_metrics()
+
 
     # results = get_metrics()
 
