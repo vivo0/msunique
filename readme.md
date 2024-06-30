@@ -40,20 +40,10 @@ You can set these in a `.env` file in backend and frontend directories.
 ## How the app works
 
 ### Parsing Data
-We have parsed the data from the document JSON to create a new JSON with the keys "section" extracted from the document index and the corresponding section content. This structured approach allows us to store the data more efficiently in the vector database, thereby enhancing the chatbot's performance.
+We have designed a process to extract specific metrics from company documents using GPT-4o. The extracted metrics are then organized and stored in a JSON file in order to efficiently store information and don't overuse tokens to extract the same data.
 
 ### Find the metrics
-We have selected a set of metrics. An LLM (Language Model) is responsible for extracting these metrics from the documents of each company and saving them in a JSON file.
+We have selected a set of metrics. GPT-4o is responsible for extracting these metrics from the documents of each company and saving them in a JSON file.
 
 ### Bot
-In addition to the LLM for extracting metrics, there are two other agents: one specialized in individual companies and another specialized in comparing two companies.
-
-### Limitations and Future Work
-
-As this is a hackathon project developed by a single person, there are several areas for improvement:
-
-- Enhance error handling and input validation
-- Implement more sophisticated AI models for financial analysis
-- Expand the range of financial metrics and comparisons
-- Optimize performance for handling larger volumes of reports
-- Implement robust testing, including unit and integration tests
+In addition to the LLM for extracting metrics, there are two other agents: one specialized in extracting information from companies individually and second is specialized in comparing two different companies with the information gathered by the first agent.

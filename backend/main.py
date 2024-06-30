@@ -146,7 +146,8 @@ def get_metrics():
         with open("metrics.json", mode='r') as file:
             return json.load(file)
     else:
-        return calculate_metrics()
+        print("Metrics file not found. Calculating metrics...")
+        # return calculate_metrics()
 
 @app.post("/chatbot")
 def post_query(query_data: dict):
@@ -174,12 +175,12 @@ def post_query(query_data: dict):
     
 
 if __name__ == "__main__":
-    # import uvicorn
-    # uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
     # post_query({"query": "tell me the ROCE", "company": ["IBM2023"]})
     
-    get_metrics()
+    # get_metrics()
 
 
     # results = get_metrics()
