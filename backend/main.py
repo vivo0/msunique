@@ -10,6 +10,7 @@ import os
 import time
 from retrying import retry
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 METRICS = [
     "Net Revenue",
@@ -59,6 +60,21 @@ METRICS = [
 ]
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:3000",
+    # Aggiungi altre origini se necessario
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -120,10 +136,10 @@ def post_query(query_data: dict):
     
 
 if __name__ == "__main__":
-    # import uvicorn
-    # uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
-    post_query({"query": "I want to invest in one of these two companies, tell me exactly which are the comparable metrics based on the sector and which are the best indicators to analyze different sectors companies", "company": ["IBM2023", "UBS2023"]})
+    # post_query({"query": "I want to invest in one of these two companies, tell me exactly which are the comparable metrics based on the sector and which are the best indicators to analyze different sectors companies", "company": ["IBM2023", "UBS2023"]})
     
 
     # results = get_metrics()
