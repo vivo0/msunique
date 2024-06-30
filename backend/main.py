@@ -105,21 +105,25 @@ def get_metrics():
 @app.post("/chatbot")
 def post_query(query_data: dict):
     query = query_data.get("query")
-    namespace = query_data.get("company")
-
-    # query = "dimmi la ROCE di ABB nel 2023"
-    # namespace = "ABB2023"
-    response = bot.get_response(query, namespace)
-    print(response)
+    namespaces = query_data.get("company")
+    responses = []
+    for namespace in namespaces:
+        responses.append(bot.get_response(query, namespace, compare=None))
     
-    return {"response": response}
+    if len(namespaces) == 1:
+        print(f"Response: {responses[0]}")
+        return {"response": responses[0]}
+    else:
+        response = bot.get_response(query, None, compare=responses)
+        print(f"Response: {response}")
+        return {"response": response}       
     
 
 if __name__ == "__main__":
     # import uvicorn
     # uvicorn.run(app, host="0.0.0.0", port=8000)
 
-    post_query({"query": "Tell me the TOTAL expanses", "company": "ABB2023"})
+    post_query({"query": "I want to invest in one of these two companies, tell me exactly which are the comparable metrics based on the sector and which are the best indicators to analyze different sectors companies", "company": ["IBM2023", "UBS2023"]})
     
 
     # results = get_metrics()

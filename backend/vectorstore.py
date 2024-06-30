@@ -11,10 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-os.environ["OPENAI_API_KEY"] = PINECONE_API_KEY
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 pinecone = Pinecone(api_key=PINECONE_API_KEY)
-
-
 
 class Vectorstore:
     def __init__(self, index_name, similarity_metric='cosine'):
@@ -53,6 +51,15 @@ class Vectorstore:
     
 
     def process_documents(self, folder):
+        # check if folder exists
+
+        if not os.path.exists(folder):
+            print(f"Folder {folder} does not exist")
+            return
+        else:
+            print(f"Processing documents in {folder}")
+
+        # 
         # itera su ogni sottocartella e file
         for root, dirs, files in os.walk(folder):
             for file in files:
@@ -60,6 +67,7 @@ class Vectorstore:
                     # extract filename
                     # filename = file.split(".")[0].lower()
                     # self.index_name = filename
+                    print(f"Processing {file}")
                     self.process_document(os.path.join(root, file))
 
 
@@ -80,14 +88,6 @@ class Vectorstore:
                     doc_info = {"name": split_filename[-1], "type": split_file_type[-1]}
                     docs_info = [doc_info | el for el in data]
                     documents.extend(docs_info)
-
-        self.namespaces.add(namespace_name)
-        with open("namespaces.txt", "w") as file:
-            file.write("\n".join(self.namespaces))
-
-        json_file_path = "ABBData.json"
-        with open(json_file_path, mode='w') as file:
-            json.dump(documents, file, indent=4)
 
         # CHUNKING
         max_tokens = 512
@@ -110,14 +110,6 @@ class Vectorstore:
                 # remove "content" key
                 # doc_info.pop("content")
                 list_of_documents_chunked.append(doc_info)
-        print(f"list_of_documents_chunked: {len(list_of_documents_chunked)}")
-
-        # dump in a json file
-        with open("ABBDataChunked.json", mode='w') as file:
-            json.dump(list_of_documents_chunked, file, indent=4)
-        
-        with open("ABBData.json", mode='w') as file:
-            json.dump(documents, file, indent=4)
 
         # EMBEDDING
         embedder = OpenAIEmbeddings(model="text-embedding-ada-002")
@@ -151,12 +143,11 @@ class Vectorstore:
         # top 10 most large elements:
 
         vector_list.sort(key=lambda x: len(x["metadata"]["text"]), reverse=True)
-        for i in range(10):
-            print(f"len: {len(vector_list[i]['metadata']['text'])}, text: {vector_list[i]['metadata']['section']}")
         
         # split text in two parts
-        for el in vector_list:
-            if len(el["metadata"]["text"]) < 47000:
+        while 1:
+            el = vector_list[0]
+            if len(el["metadata"]["text"]) < 40000:
                 break
             print(f"len: {len(el['metadata']['text'])}, text: {el['metadata']['section']}")
             vector_list.remove(el)
@@ -164,25 +155,17 @@ class Vectorstore:
             el2 = el.copy()
             el1["metadata"]["text"] = vector_list[0]["metadata"]["text"][:len(vector_list[0]["metadata"]["text"]) // 2]
             el2["metadata"]["text"] = vector_list[0]["metadata"]["text"][len(vector_list[0]["metadata"]["text"]) // 2:]
-            vector_list.insert(0, el1)
+            vector_list.append(el1)
             vector_list.append(el2)
+            vector_list.sort(key=lambda x: len(x["metadata"]["text"]), reverse=True)
 
-
-        print("NCAOCNOASW")
-        vector_list.sort(key=lambda x: len(x["metadata"]["text"]), reverse=True)
-        for i in range(10):
-            print(f"len: {len(vector_list[i]['metadata']['text'])}, text: {vector_list[i]['metadata']['section']}")
+        self.namespaces.add(namespace_name)
+        with open("namespaces.txt", "w") as file:
+            file.write("\n".join(self.namespaces))
         
-        
-
-
         # divide the vector in two parts
         vl1 = vector_list[:len(vector_list) // 2]
         vl2 = vector_list[len(vector_list) // 2:]
-
-        # dump in a json file
-        with open("ABBDataChunkedEmbed.json", mode='w') as file:
-            json.dump(vector_list, file, indent=4)
 
         self.index = self.pinecone.Index(self.index_name)
         self.index.upsert(vectors=vl1)
@@ -210,7 +193,7 @@ class Vectorstore:
 if __name__ == "__main__":
     index_name = "swisshackaton"
     vs = Vectorstore(index_name)
-    vs.process_documents("parsed_docs")
+    vs.process_documents("backend/parsed_docs")
     print("done")
 
 
