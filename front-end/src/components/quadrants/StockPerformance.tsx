@@ -8,8 +8,8 @@ import {
 } from "./QuadrantsStyles";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -27,7 +27,10 @@ interface StockPerformanceProps {
 }
 
 const generateMockStockData = (data: StockPerformanceProps["data"]) => {
-  const companies = data[0]?.values.map((v) => v.key) || [];
+  const epsData = data.find(
+    (metric) => metric.title === "Earnings Per Share (EPS)"
+  );
+  const companies = epsData?.values.map((v) => v.key) || [];
   const mockData = [];
   const basePrices = companies?.reduce((acc, company) => {
     acc[company] = 100 + Math.random() * 100;
@@ -98,6 +101,18 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
 
   const colors = ["#8884d8", "#82ca9d"];
 
+  // Extract EPS data for the BarChart
+  const epsData = useMemo(() => {
+    const epsMetric = data.find(
+      (metric) => metric.title === "Earnings Per Share (EPS)"
+    );
+    if (!epsMetric) return [];
+    return epsMetric.values.map(({ key, value }) => ({
+      name: key,
+      uv: parseFloat(value.replace(/[^\d.-]/g, "")) || 0,
+    }));
+  }, [data]);
+
   return (
     <QuadrantStock expanded={expanded}>
       <h2
@@ -125,8 +140,8 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
           >
             <GraphPlaceholder>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={mockStockData}
+                <BarChart
+                  data={epsData}
                   margin={{
                     top: 10,
                     right: 30,
@@ -135,20 +150,11 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+                  <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  {selectedCompanies.map((company, index) => (
-                    <Area
-                      key={company}
-                      type="monotone"
-                      dataKey={company}
-                      stackId="1"
-                      stroke={colors[index % colors.length]}
-                      fill={colors[index % colors.length]}
-                    />
-                  ))}
-                </AreaChart>
+                  <Bar dataKey="uv" fill="#8884d8" />
+                </BarChart>
               </ResponsiveContainer>
             </GraphPlaceholder>
           </div>
