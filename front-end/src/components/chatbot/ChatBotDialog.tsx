@@ -40,14 +40,14 @@ const ChatBotDialog = ({ setOpen, className, color }: ChatBotDialogProps) => {
     return () => clearTimeout(timer);
   }, []);
 
-  console.log(concatenatedArray);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const handleSend = async (message: string) => {
     setMessages([...messages, { text: message, sender: "user" }]);
     setIsTyping(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/chatbot", {
+      const response = await axios.post(`${API_URL}/chatbot`, {
         query: message,
         company: concatenatedArray,
       });
