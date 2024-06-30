@@ -1,18 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-
-interface Message {
-  text: string;
-  sender: string;
-  id?: string;
-}
+import React, { useEffect, useRef } from "react";
 
 interface ChatAreaProps {
-  messages: Message[];
+  messages: { text: string; sender: string }[];
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ messages: propMessages }) => {
-  const [messages, setMessages] = useState(propMessages);
+const ChatArea: React.FC<ChatAreaProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -23,20 +15,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages: propMessages }) => {
     const timer = setTimeout(() => {
       scrollToBottom();
     }, 100);
+
     return () => clearTimeout(timer);
-  }, [messages]);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const storedMessages = JSON.parse(
-        localStorage.getItem("chatBotMessages") || "[]"
-      );
-      if (JSON.stringify(storedMessages) !== JSON.stringify(messages)) {
-        setMessages(storedMessages);
-      }
-    }, 200);
-
-    return () => clearInterval(intervalId);
   }, [messages]);
 
   return (
@@ -55,7 +35,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages: propMessages }) => {
       <div style={{ flexGrow: 1, marginTop: "10px", overflowY: "auto" }}>
         {messages.map((message, index) => (
           <div
-            key={message.id || index}
+            key={index}
             style={{
               marginBottom: "10px",
               textAlign: message.sender === "bot" ? "left" : "right",
@@ -76,11 +56,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages: propMessages }) => {
                 color: "white",
               }}
             >
-              {message.sender === "bot" ? (
-                <ReactMarkdown>{message.text}</ReactMarkdown>
-              ) : (
-                message.text
-              )}
+              {message.text}
             </span>
           </div>
         ))}
@@ -94,18 +70,20 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages: propMessages }) => {
         }}
       ></div>
       <style>{`
-        div::-webkit-scrollbar {
-          width: 5px;
-        }
-        div::-webkit-scrollbar-track {
-          background: #dedede;
-          border-radius: 10px;
-        }
-        div::-webkit-scrollbar-thumb {
-          background: #a7a7a7;
-          border-radius: 10px;
-        }
-      `}</style>
+                div::-webkit-scrollbar {
+                    width: 5px;
+                }
+
+                div::-webkit-scrollbar-track {
+                    background: #dedede;
+                    border-radius: 10px;
+                }
+
+                div::-webkit-scrollbar-thumb {
+                    background: #a7a7a7;
+                    border-radius: 10px;
+                }
+            `}</style>
     </div>
   );
 };
