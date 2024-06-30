@@ -25,30 +25,6 @@ interface StockPerformanceProps {
   data: (Metric & { values: Array<{ key: string; value: string }> })[];
   allFiltersSelected: boolean;
 }
-
-const generateMockStockData = (data: StockPerformanceProps["data"]) => {
-  const epsData = data.find(
-    (metric) => metric.title === "Earnings Per Share (EPS)"
-  );
-  const companies = epsData?.values.map((v) => v.key) || [];
-  const mockData = [];
-  const basePrices = companies?.reduce((acc, company) => {
-    acc[company] = 100 + Math.random() * 100;
-    return acc;
-  }, {});
-
-  for (let i = 0; i < 30; i++) {
-    const dataPoint = {
-      date: `2023-${String(i + 1).padStart(2, "0")}-01`,
-    };
-    companies.forEach((company) => {
-      dataPoint[company] = basePrices[company] + Math.random() * 50 - 25;
-    });
-    mockData.push(dataPoint);
-  }
-  return mockData;
-};
-
 const isPercentageMetric = (
   values: Array<{ key: string; value: string }>,
   title: string
@@ -93,15 +69,6 @@ const StockPerformance: React.FC<StockPerformanceProps> = ({
   data,
   allFiltersSelected,
 }) => {
-  const mockStockData = useMemo(() => generateMockStockData(data), [data]);
-  const selectedCompanies = useMemo(
-    () => data[0]?.values.map((v) => v.key) || [],
-    [data]
-  );
-
-  const colors = ["#8884d8", "#82ca9d"];
-
-  // Extract EPS data for the BarChart
   const epsData = useMemo(() => {
     const epsMetric = data.find(
       (metric) => metric.title === "Earnings Per Share (EPS)"
