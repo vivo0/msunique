@@ -8,6 +8,7 @@ backend/parsed_docs
 backend/doc_contents
 backend/.env
 results.json
+backend/metrics.json
 # Logs
 logs
 *.log
