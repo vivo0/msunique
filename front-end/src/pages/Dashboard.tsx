@@ -7,6 +7,7 @@ import StockPerformance from "../components/quadrants/StockPerformance";
 import RegulatoryManagement from "../components/quadrants/RegulatoryManagement";
 import KeyRatios from "../components/quadrants/KeyRatios";
 import SidebarMenu from "../components/sidebarmenu/SidebarMenu";
+import ReactMarkdown from "react-markdown";
 import { QuadrantSection } from "../components/quadrants/QuadrantsStyles";
 import {
   MainContainer,
@@ -25,6 +26,7 @@ import {
   regulatoryManagementMetrics,
   stockPerformanceMetrics,
 } from "../constants/metrics";
+import Markdown from "react-markdown";
 
 interface CompanyInfo {
   name: string;
@@ -69,7 +71,7 @@ const Dashboard: React.FC = () => {
       const companyName = key.replace(/\d+$/, "");
       if (
         metrics[key] &&
-        metrics[key].description &&
+        metrics[key].response &&
         !companyDescriptions[companyName]
       ) {
         companyDescriptions[companyName] = metrics[key].description;
@@ -125,7 +127,7 @@ const Dashboard: React.FC = () => {
           if (companyKey) {
             return {
               name: companyName,
-              description: metrics[companyKey].description || "",
+              description: metrics[companyKey].response || "",
               score: calculateScore(metrics[companyKey]),
             };
           }
@@ -161,7 +163,7 @@ const Dashboard: React.FC = () => {
                     marginBottom: index === 0 ? "20px" : "0",
                   }}
                 >
-                  {companyInfo.description}
+                  <Markdown>{companyInfo.description}</Markdown>
                 </p>
               </div>
             ))}
