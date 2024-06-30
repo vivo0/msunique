@@ -14,7 +14,8 @@ The backend of this application handles the core functionality of reading financ
 - Python
 - FastAPI
 - Docker
-- GPT-4 for natural language processing
+- GPT-4o for natural language processing
+- Pinecone
 
 ### Running the Application
 
@@ -34,7 +35,15 @@ Once the backend is running, you can access the API documentation at `http://loc
 ### Environment Variables
 
 Make sure to set up the necessary environment variables before running the application.
-You can set these in a `.env` file in the root directory of the project.
+You can set these in a `.env` file in backend and frontend directories.
+
+## How the app works
+
+### Parsing Data
+We have parsed the data from the document JSON to create a new JSON with the keys "section" extracted from the document index and the corresponding section content. This structured approach allows us to store the data more efficiently in the vector database, thereby enhancing the chatbot's performance.
+
+### Find the metrics
+Abbiamo scelto una serie di metriche, un LLM si occupa di cercare queste metriche nei documenti di ogni compagnia 
 
 ### Limitations and Future Work
 
