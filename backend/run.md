@@ -1,2 +1,2 @@
-docker build -t fainalyze .
-docker run -d -p 8000:8000 fainalyze
+docker build -t fainalyse .
+docker run -p 8000:8000 fainalyse
